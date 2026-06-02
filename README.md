@@ -8,13 +8,13 @@
 
 ---
 
-## Anggota Tim
+## Anggota
 
 | No | Nama | NRP | Peran |
 |----|------|-----|-------|
-| 1  | Shinta Alya Ramadani | 5027241016 | Web Server + DDoS + Malware + SOAR |
-| 2  | Angga Firmansyah | 5027241062 | Web Server + DDoS + Malware + SOAR |
-| 3  | Zaenal Mustofa | 5027241018 | Web Server + DDoS + Malware + SOAR |
+| 1  | Shinta Alya Ramadani | 5027241016 | AGENT |
+| 2  | Angga Firmansyah | 5027241062 | MANAGER |
+| 3  | Zaenal Mustofa | 5027241018 | AGENT |
 
 ---
 
@@ -183,24 +183,9 @@ rule.id:100402                 → HTTP flood yang memicu SOAR
 | `Documentation/soar-dashboard.png` | Dashboard search "remove-malware" |
 | `Documentation/soar-firewall-drop.png` | active-responses.log add & delete firewall-drop |
 
-> Tambahkan screenshot ke folder `Documentation/` sesuai nama di tabel di atas.
 
 ---
 
-## 8. Checklist Deliverable
-
-- [ ] Web server active (screenshot status + halaman browser)
-- [ ] Logtest rule 100200 & 100301 match (screenshot)
-- [ ] Rekap jumlah alert per rule (screenshot)
-- [ ] Dashboard Threat Hunting per `rule.id` (screenshot tiap jenis)
-- [ ] Modul Malware Detection menampilkan EICAR (screenshot)
-- [ ] Detail satu alert (rule.id, description, agent.name)
-- [ ] Analisis log density tertulis
-- [ ] SOAR: active-responses.log baris KARANTINA (screenshot)
-- [ ] SOAR: folder `/var/ossec/quarantine/` berisi file (screenshot)
-- [ ] SOAR: Dashboard search "remove-malware" (screenshot)
-
----
 
 ## Struktur Repository
 
@@ -224,9 +209,3 @@ rule.id:100402                 → HTTP flood yang memicu SOAR
 │   └── remove-malware.py       ← SOAR: skrip karantina
 └── Documentation/              ← Screenshot-screenshot (upload manual)
 ```
-
----
-
-*Laporan ini disusun berdasarkan simulasi yang dilakukan di lingkungan lab tertutup.*  
-*Semua serangan hanya dilakukan terhadap infrastruktur milik kelompok sendiri.*  
-*© 2026 Kelompok 7 — Institut Teknologi Sepuluh Nopember*
