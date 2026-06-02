@@ -1,0 +1,23 @@
+[Unit]
+Description=Wazuh Lab Web Server (Target)
+Documentation=https://github.com/YOUR_USERNAME/YOUR_REPO
+After=network.target wazuh-agent.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/wazuh-lab/webserver
+ExecStart=/usr/bin/python3 /opt/wazuh-lab/webserver/app.py
+Restart=on-failure
+RestartSec=5s
+
+# Pastikan folder log ada sebelum start
+ExecStartPre=/bin/mkdir -p /var/log/webserver
+
+# Output juga masuk ke journald
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=wazuh-webserver
+
+[Install]
+WantedBy=multi-user.target

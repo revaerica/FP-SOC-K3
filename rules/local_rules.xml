@@ -1,0 +1,98 @@
+<!-- ============================================================
+     local_rules.xml — Custom Rules Wazuh
+     Kelompok 7 ITS — Web Server + DDoS + Malware + SOAR
+     Deploy ke: /var/ossec/ruleset/rules/local_rules.xml (Manager)
+     ============================================================ -->
+
+<group name="local,">
+
+  <!-- ===========================================================
+       RULES DDOS LAYER 3/4 — Deteksi dari kern.log (iptables LOG)
+       =========================================================== -->
+
+  <!-- SYN Flood: iptables menulis "SYN-FLOOD:" ke kern.log -->
+  <rule id="100200" level="12">
+    <if_group>syslog</if_group>
+    <match>SYN-FLOOD:</match>
+    <description>DDoS: SYN Flood terdeteksi via iptables</description>
+    <group>ddos,attack,</group>
+  </rule>
+
+  <!-- UDP Flood -->
+  <rule id="100201" level="12">
+    <if_group>syslog</if_group>
+    <match>UDP-FLOOD:</match>
+    <description>DDoS: UDP Flood terdeteksi via iptables</description>
+    <group>ddos,attack,</group>
+  </rule>
+
+  <!-- ICMP Flood -->
+  <rule id="100202" level="12">
+    <if_group>syslog</if_group>
+    <match>ICMP-FLOOD:</match>
+    <description>DDoS: ICMP Flood terdeteksi via iptables</description>
+    <group>ddos,attack,</group>
+  </rule>
+
+
+  <!-- ===========================================================
+       RULES MALWARE — Deteksi dari ClamAV log
+       KUNCI: group "rootcheck" WAJIB agar muncul di Malware Detection
+       =========================================================== -->
+
+  <!-- ClamAV malware umum (FOUND) -->
+  <rule id="100300" level="12">
+    <if_group>syslog</if_group>
+    <match>FOUND</match>
+    <program_name>clamscan|clamd|clamdscan</program_name>
+    <description>Malware: ClamAV mendeteksi file berbahaya</description>
+    <!-- rootcheck WAJIB agar tampil di modul Malware Detection -->
+    <group>malware,antivirus,rootcheck,</group>
+  </rule>
+
+  <!-- ClamAV EICAR test file — level lebih tinggi (14) -->
+  <rule id="100301" level="14">
+    <if_group>syslog</if_group>
+    <match>EICAR</match>
+    <program_name>clamscan|clamd|clamdscan</program_name>
+    <description>Malware: ClamAV EICAR test file terdeteksi (SOAR trigger)</description>
+    <group>malware,antivirus,rootcheck,</group>
+  </rule>
+
+  <!-- ClamAV daemon (clamd) FOUND — format log sedikit berbeda -->
+  <rule id="100302" level="12">
+    <if_group>syslog</if_group>
+    <match>FOUND</match>
+    <program_name>clamd</program_name>
+    <description>Malware: ClamAV daemon mendeteksi file berbahaya</description>
+    <group>malware,antivirus,rootcheck,</group>
+  </rule>
+
+
+  <!-- ===========================================================
+       RULES HTTP FLOOD LAYER-7 — Korelasi request web
+       
+       CATATAN PENTING — Kenapa perlu dua rule?
+       Rule bawaan 31108 untuk request web berada di level 0.
+       Engine korelasi "frequency" Wazuh tidak menghitung event
+       level 0 secara andal. Solusinya: buat rule perantara 100400
+       di level 1 yang fired untuk setiap request, lalu 100402
+       mengkorelasikan 30 request dari IP yang sama dalam 10 detik.
+       =========================================================== -->
+
+  <!-- Rule perantara: fired untuk setiap request ke web server -->
+  <rule id="100400" level="1">
+    <if_sid>31108</if_sid>
+    <description>Web: request HTTP diterima (penanda untuk korelasi)</description>
+    <group>web,weblog,</group>
+  </rule>
+
+  <!-- HTTP Flood L7: 30+ request dari IP sama dalam 10 detik -->
+  <rule id="100402" level="12" frequency="30" timeframe="10">
+    <if_matched_sid>100400</if_matched_sid>
+    <same_source_ip />
+    <description>DDoS: HTTP Flood layer-7 terdeteksi (30+ req/IP/10s) — SOAR trigger</description>
+    <group>ddos,attack,http_flood,</group>
+  </rule>
+
+</group>

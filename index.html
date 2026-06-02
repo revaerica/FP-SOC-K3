@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kelompok 7 ITS — Wazuh Lab: DDoS & Malware + SOAR</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0d1117;
+      --surface: #161b22;
+      --border:  #30363d;
+      --text:    #e6edf3;
+      --muted:   #8b949e;
+      --accent:  #58a6ff;
+      --green:   #3fb950;
+      --red:     #f85149;
+      --yellow:  #d29922;
+      --purple:  #bc8cff;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .shield { font-size: 2rem; }
+    header h1 { font-size: 1.25rem; font-weight: 700; color: var(--accent); }
+    header p  { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+    .badge {
+      margin-left: auto;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .badge span {
+      font-size: 0.7rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      font-weight: 600;
+    }
+    .badge .b-green  { background: #1a4a25; color: var(--green); }
+    .badge .b-blue   { background: #1a3050; color: var(--accent); }
+    .badge .b-purple { background: #2d1f4a; color: var(--purple); }
+
+    /* ── Layout ── */
+    main { max-width: 960px; margin: 2rem auto; padding: 0 1.5rem; }
+
+    /* ── Summary cards ── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      text-align: center;
+    }
+    .card .num  { font-size: 2rem; font-weight: 800; color: var(--accent); }
+    .card .lbl  { font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem; }
+
+    /* ── Section ── */
+    section { margin-bottom: 2rem; }
+    h2 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    /* ── Table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th {
+      background: #21262d;
+      color: var(--muted);
+      text-align: left;
+      padding: 0.6rem 0.85rem;
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    td {
+      padding: 0.6rem 0.85rem;
+      border-top: 1px solid var(--border);
+      color: var(--text);
+    }
+    tr:hover td { background: #1c2128; }
+
+    .ok     { color: var(--green); font-weight: 700; }
+    .warn   { color: var(--yellow); }
+    .crit   { color: var(--red); font-weight: 700; }
+    .mono   { font-family: monospace; font-size: 0.8rem; color: var(--purple); }
+
+    /* ── SOAR playbook ── */
+    .playbook {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .pb-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.1rem 1.25rem;
+    }
+    .pb-card h3 { font-size: 0.9rem; color: var(--accent); margin-bottom: 0.5rem; }
+    .pb-card p  { font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+    .pb-card .tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      margin-top: 0.5rem;
+      font-weight: 600;
+    }
+    .tag-red   { background: #3a1a1a; color: var(--red); }
+    .tag-green { background: #1a3a1a; color: var(--green); }
+
+    /* ── Timeline ── */
+    .timeline { list-style: none; }
+    .timeline li {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.82rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+      align-items: flex-start;
+    }
+    .timeline li:last-child { border-bottom: none; }
+    .tl-step {
+      background: var(--accent);
+      color: #000;
+      font-weight: 800;
+      font-size: 0.7rem;
+      width: 1.6rem;
+      height: 1.6rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 0.1rem;
+    }
+    .tl-text { color: var(--text); }
+    .tl-text .phase { color: var(--muted); font-size: 0.72rem; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--muted);
+      padding: 2rem;
+      border-top: 1px solid var(--border);
+      margin-top: 3rem;
+    }
+
+    @media (max-width: 600px) {
+      .playbook { grid-template-columns: 1fr; }
+      .badge    { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="shield">🛡️</span>
+  <div>
+    <h1>Wazuh Lab — Web Server + DDoS + Malware + SOAR</h1>
+    <p>Kelompok 7 · Manajemen Insiden & Keamanan Siber · ITS 2026</p>
+  </div>
+  <div class="badge">
+    <span class="b-green">✔ SIEM Active</span>
+    <span class="b-purple">⚡ SOAR Active</span>
+    <span class="b-blue">Wazuh 4.9</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- Summary Cards -->
+  <div class="cards">
+    <div class="card">
+      <div class="num">5</div>
+      <div class="lbl">Jenis Serangan Terdeteksi</div>
+    </div>
+    <div class="card">
+      <div class="num" style="color:var(--red)">87K+</div>
+      <div class="lbl">Total Alert Wazuh</div>
+    </div>
+    <div class="card">
+      <div class="num" style="color:var(--green)">2</div>
+      <div class="lbl">SOAR Playbook Aktif</div>
+    </div>
+    <div class="card">
+      <div class="num" style="color:var(--purple)">8</div>
+      <div class="lbl">Custom Rules</div>
+    </div>
+    <div class="card">
+      <div class="num" style="color:var(--yellow)">6</div>
+      <div class="lbl">Kendala Diselesaikan</div>
+    </div>
+  </div>
+
+  <!-- Detection Results -->
+  <section>
+    <h2>Hasil Deteksi</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Jenis Serangan</th>
+          <th>Rule ID</th>
+          <th>Jumlah Alert</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>SYN Flood</td>
+          <td class="mono">100200</td>
+          <td class="crit">75.319</td>
+          <td class="ok">✅ TERDETEKSI</td>
+        </tr>
+        <tr>
+          <td>UDP Flood</td>
+          <td class="mono">100201</td>
+          <td class="crit">12.047</td>
+          <td class="ok">✅ TERDETEKSI</td>
+        </tr>
+        <tr>
+          <td>ICMP Flood</td>
+          <td class="mono">100202</td>
+          <td>4</td>
+          <td class="ok">✅ TERDETEKSI</td>
+        </tr>
+        <tr>
+          <td>HTTP Flood L7</td>
+          <td class="mono">100402</td>
+          <td class="warn">480</td>
+          <td class="ok">✅ TERDETEKSI</td>
+        </tr>
+        <tr>
+          <td>Malware EICAR (ClamAV)</td>
+          <td class="mono">100300 / 100301</td>
+          <td>8</td>
+          <td class="ok">✅ TERDETEKSI</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- SOAR Playbook -->
+  <section>
+    <h2>SOAR Playbook</h2>
+    <div class="playbook">
+      <div class="pb-card">
+        <h3>⚡ Auto-Block DDoS</h3>
+        <p>
+          Saat <span class="mono">rule 100402</span> terpicu (HTTP Flood 30+ req/10s),
+          Wazuh otomatis memblokir IP penyerang via <code>iptables DROP</code>
+          selama 120 detik, lalu rollback otomatis.
+        </p>
+        <span class="tag tag-red">Pemicu: rule 100402 (HTTP Flood)</span>
+        <span class="tag tag-green">Hasil: firewall-drop + rollback otomatis</span>
+      </div>
+      <div class="pb-card">
+        <h3>🔒 Auto-Quarantine Malware</h3>
+        <p>
+          Saat <span class="mono">rule 100300/100301</span> terpicu (ClamAV FOUND),
+          script <code>remove-malware.py</code> memindahkan file ke
+          <code>/var/ossec/quarantine/</code> secara otomatis.
+        </p>
+        <span class="tag tag-red">Pemicu: rule 100300/100301 (ClamAV)</span>
+        <span class="tag tag-green">Hasil: file dikarantina + log dicatat</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Implementation Timeline -->
+  <section>
+    <h2>Alur Implementasi</h2>
+    <ul class="timeline">
+      <li>
+        <div class="tl-step">A</div>
+        <div class="tl-text">
+          <div><strong>Deploy Web Server</strong> — Python stdlib, format Apache Combined Log, systemd service</div>
+          <div class="phase">Agent-1 (10.0.0.5) · /opt/wazuh-lab/webserver/</div>
+        </div>
+      </li>
+      <li>
+        <div class="tl-step">B</div>
+        <div class="tl-text">
+          <div><strong>Konfigurasi Logging</strong> — iptables LOG rules (SYN/UDP/ICMP), ClamAV install, localfile ossec.conf</div>
+          <div class="phase">Agent-1 · kern.log + access.log + clamav.log</div>
+        </div>
+      </li>
+      <li>
+        <div class="tl-step">C</div>
+        <div class="tl-text">
+          <div><strong>Custom Rules & Decoder</strong> — 8 rules (100200-100402), validasi wazuh-analysisd -t</div>
+          <div class="phase">Manager (10.0.0.4) · /var/ossec/ruleset/rules/</div>
+        </div>
+      </li>
+      <li>
+        <div class="tl-step">D</div>
+        <div class="tl-text">
+          <div><strong>Eksekusi Serangan</strong> — hping3 SYN/UDP/ICMP flood + HTTP flood paralel + EICAR scan</div>
+          <div class="phase">Agent-2 → Agent-1 · 4 vektor DDoS + 1 malware</div>
+        </div>
+      </li>
+      <li>
+        <div class="tl-step">E</div>
+        <div class="tl-text">
+          <div><strong>Verifikasi Deteksi</strong> — 87K+ alert total, semua jenis terdeteksi, malware tampil di modul Malware Detection</div>
+          <div class="phase">Wazuh Dashboard · Threat Hunting + Malware Detection</div>
+        </div>
+      </li>
+      <li>
+        <div class="tl-step">F</div>
+        <div class="tl-text">
+          <div><strong>SOAR Implementation</strong> — firewall-drop (DDoS) + remove-malware.py (quarantine), troubleshoot 6 kendala</div>
+          <div class="phase">Manager + Agent-1 · Active Response</div>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- Team Members -->
+  <section>
+    <h2>Anggota Tim</h2>
+    <table>
+      <thead>
+        <tr><th>Nama</th><th>NRP</th><th>Peran</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Shinta Alya Ramadani</strong></td>
+          <td class="mono">5027241016</td>
+          <td>Web Server + DDoS + Malware + SOAR</td>
+        </tr>
+        <tr>
+          <td><strong>Angga Firmansyah</strong></td>
+          <td class="mono">5027241062</td>
+          <td>Web Server + DDoS + Malware + SOAR</td>
+        </tr>
+        <tr>
+          <td><strong>Zaenal Mustofa</strong></td>
+          <td class="mono">5027241018</td>
+          <td>Web Server + DDoS + Malware + SOAR</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Infrastructure -->
+  <section>
+    <h2>Infrastruktur</h2>
+    <table>
+      <thead>
+        <tr><th>Peran</th><th>VM</th><th>IP Publik</th><th>IP Private</th><th>Fungsi</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Manager</strong></td>
+          <td class="mono">wazuh-manager</td>
+          <td class="mono">70.153.86.7</td>
+          <td class="mono">10.0.0.4</td>
+          <td>Rules, SOAR, Monitor</td>
+        </tr>
+        <tr>
+          <td><strong>Target</strong></td>
+          <td class="mono">wazuh-agent-1</td>
+          <td class="mono">70.153.151.52</td>
+          <td class="mono">10.0.0.5</td>
+          <td>Web Server + ClamAV</td>
+        </tr>
+        <tr>
+          <td><strong>Attacker</strong></td>
+          <td class="mono">wazuh-agent-2</td>
+          <td class="mono">48.193.46.1</td>
+          <td class="mono">10.0.0.6</td>
+          <td>Sumber Serangan</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+</main>
+
+<footer>
+  &copy; 2026 Kelompok 7 — Institut Teknologi Sepuluh Nopember &nbsp;|&nbsp;
+  Manajemen Insiden &amp; Keamanan Siber &nbsp;|&nbsp;
+  Simulasi dilakukan di lingkungan lab tertutup
+</footer>
+
+</body>
+</html>

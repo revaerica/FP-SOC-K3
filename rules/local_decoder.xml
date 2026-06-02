@@ -1,0 +1,16 @@
+<!-- ============================================================
+     local_decoder.xml — SENGAJA DIKOSONGKAN
+     ============================================================
+     Wazuh sudah memiliki decoder bawaan "web-accesslog" yang
+     menangani format Apache Combined Log dengan benar.
+
+     Decoder custom untuk web log TIDAK diperlukan dan justru
+     menyebabkan konflik jika menggunakan sintaks regex \d, \[
+     yang tidak didukung mesin os_regex Wazuh.
+
+     Kendala: Jika file ini berisi decoder web dengan regex \d atau \[,
+     Manager akan crash dengan error:
+       (1452): Syntax error on regex
+
+     Solusi: Biarkan file ini kosong.
+     ============================================================ -->

@@ -1,0 +1,46 @@
+===================================================================
+BACA INI SEBELUM MULAI — KELOMPOK 7 ITS
+Shinta Alya Ramadani (5027241016) | Angga Firmansyah (5027241062) | Zaenal Mustofa (5027241018)
+===================================================================
+
+PENTING: Fase ini (Orang 5) melanjutkan dari Orang 1-4.
+Pastikan Wazuh Manager, Indexer, Dashboard, dan Agent sudah aktif.
+
+---
+
+CATATAN KEAMANAN:
+- VM ber-IP publik mendapat brute-force SSH real-time dari bot internet.
+  Persempit NSG port 22 ke IP sendiri!
+- Web server tidak pakai autentikasi. Tutup NSG port 80 setelah demo.
+- SOAR auto-block: JANGAN gunakan rule 100200/100201/100202 sebagai
+  trigger firewall-drop — akan memblokir IP admin sendiri!
+  Gunakan rule korelasi 100402.
+- Matikan VM setelah lab selesai untuk menghindari tagihan Azure.
+
+---
+
+AKSES:
+- Dashboard  : https://70.153.86.7  (admin / admin)
+- Web server : http://70.153.151.52
+- SSH key    : wazuh-manager-key.pem
+
+---
+
+KALAU LOCKED OUT DARI AGENT-1:
+Azure Portal → Virtual Machines → wazuh-agent-1
+→ Run Command → RunShellScript
+→ Ketik: iptables -F INPUT
+→ Run
+
+---
+
+QUERY DASHBOARD BERGUNA:
+  rule.id:100200        → SYN flood alerts
+  rule.id:100201        → UDP flood alerts
+  rule.id:100202        → ICMP flood alerts
+  rule.id:100402        → HTTP flood alerts (SOAR trigger)
+  rule.id:100300 or rule.id:100301  → Malware alerts
+  rule.groups:active_response       → SOAR response events
+  remove-malware                    → Log karantina
+
+===================================================================
