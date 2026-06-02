@@ -165,27 +165,6 @@ rule.id:100402                 → HTTP flood yang memicu SOAR
 
 ---
 
-## 7. Screenshot Dokumentasi
-
-| Screenshot | Deskripsi |
-|------------|-----------|
-| `Documentation/webserver-active.png` | `systemctl status wazuh-webserver` — active (running) |
-| `Documentation/webserver-browser.png` | Halaman `http://70.153.151.52` di browser |
-| `Documentation/logtest-100200.png` | wazuh-logtest rule 100200 match (SYN flood) |
-| `Documentation/logtest-100301.png` | wazuh-logtest rule 100301 match (EICAR) |
-| `Documentation/alert-rekap.png` | Output grep rekap jumlah alert per rule |
-| `Documentation/threat-hunting-syn.png` | Threat Hunting `rule.id:100200` — SYN flood spike |
-| `Documentation/threat-hunting-http.png` | Threat Hunting `rule.id:100402` — 480 HTTP flood alert |
-| `Documentation/malware-detection.png` | Modul Malware Detection — EICAR alert wazuh-agent-1 |
-| `Documentation/alert-detail.png` | Detail alert (rule.id, description, agent.name) |
-| `Documentation/soar-quarantine.png` | active-responses.log baris KARANTINA |
-| `Documentation/soar-quarantine-dir.png` | `ls -l /var/ossec/quarantine/` — file terkarantina |
-| `Documentation/soar-dashboard.png` | Dashboard search "remove-malware" |
-| `Documentation/soar-firewall-drop.png` | active-responses.log add & delete firewall-drop |
-
-
----
-
 
 ## Struktur Repository
 
