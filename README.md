@@ -14,7 +14,6 @@
 |----|------|-----|-------|
 | 1  | Shinta Alya Ramadani | 5027241016 | AGENT |
 | 2  | Angga Firmansyah | 5027241062 | MANAGER |
-| 3  | Zaenal Mustofa | 5027241018 | AGENT |
 
 ---
 
