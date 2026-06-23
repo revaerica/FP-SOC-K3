@@ -1,0 +1,8 @@
+[
+  "rule_id",
+  "rule_level",
+  "freq_per_minute",
+  "hour_of_day",
+  "src_port",
+  "dst_port"
+]
