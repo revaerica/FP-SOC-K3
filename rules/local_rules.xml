@@ -59,12 +59,11 @@
     <group>malware,antivirus,rootcheck,</group>
   </rule>
 
-  <!-- ClamAV daemon (clamd) FOUND — format log sedikit berbeda -->
+  <!-- ClamAV daemon (clamd) FOUND — child dari rule bawaan 52502 -->
   <rule id="100302" level="12">
-    <if_group>syslog</if_group>
+    <if_sid>52502</if_sid>
     <match>FOUND</match>
-    <program_name>clamd</program_name>
-    <description>Malware: ClamAV daemon mendeteksi file berbahaya</description>
+    <description>Malware: ClamAV daemon mendeteksi file berbahaya (SOAR trigger)</description>
     <group>malware,antivirus,rootcheck,</group>
   </rule>
 
