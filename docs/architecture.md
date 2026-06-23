@@ -4,12 +4,12 @@
 
 | Peran | VM | IP Public | IP Private | Fungsi |
 |-------|----|-----------|------------|--------|
-| Manager | wazuh-manager | 70.153.86.7 | 10.0.0.4 | Decoder + Rules + SOAR |
-| Target | wazuh-agent-1 | 70.153.151.52 | 10.0.0.5 | Web Server + ClamAV |
+| Manager | wazuh-manager | 70.153.25.103 | 10.0.0.4 | Decoder + Rules + SOAR |
+| Target | wazuh-agent-1 | 70.153.24.223 | 10.0.0.5 | Web Server + ClamAV |
 | Attacker | wazuh-agent-2 | 48.193.46.1 | 10.0.0.6 | Sumber serangan |
 
-- **Dashboard:** https://70.153.86.7 (admin / admin)
-- **Website target:** http://70.153.151.52
+- **Dashboard:** https://70.153.25.103 (admin / admin)
+- **Website target:** http://70.153.24.223
 - **SSH key:** wazuh-manager-key.pem
 - **Platform:** Microsoft Azure (Virtual Network, NSG)
 

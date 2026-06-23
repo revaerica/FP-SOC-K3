@@ -8,7 +8,7 @@
 Pastikan sudah ada:
 - Wazuh Manager aktif di `10.0.0.4`
 - Wazuh Agent-1 (`10.0.0.5`) dan Agent-2 (`10.0.0.6`) sudah terdaftar
-- Dashboard bisa diakses di `https://70.153.86.7`
+- Dashboard bisa diakses di `https://70.153.25.103`
 
 ---
 
