@@ -12,7 +12,7 @@
 
   <!-- SYN Flood: iptables menulis "SYN-FLOOD:" ke kern.log -->
   <rule id="100200" level="12">
-    <if_group>syslog</if_group>
+    <if_group>firewall</if_group>
     <match>SYN-FLOOD:</match>
     <description>DDoS: SYN Flood terdeteksi via iptables</description>
     <group>ddos,attack,</group>
@@ -20,7 +20,7 @@
 
   <!-- UDP Flood -->
   <rule id="100201" level="12">
-    <if_group>syslog</if_group>
+    <if_group>firewall</if_group>
     <match>UDP-FLOOD:</match>
     <description>DDoS: UDP Flood terdeteksi via iptables</description>
     <group>ddos,attack,</group>
@@ -28,7 +28,7 @@
 
   <!-- ICMP Flood -->
   <rule id="100202" level="12">
-    <if_group>syslog</if_group>
+    <if_group>firewall</if_group>
     <match>ICMP-FLOOD:</match>
     <description>DDoS: ICMP Flood terdeteksi via iptables</description>
     <group>ddos,attack,</group>
