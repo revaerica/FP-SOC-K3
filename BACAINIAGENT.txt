@@ -1,6 +1,7 @@
 ===================================================================
-BACA INI SEBELUM MULAI — KELOMPOK 7 ITS
-Shinta Alya Ramadani (5027241016) | Angga Firmansyah (5027241062)
+BACA INI SEBELUM MULAI — FINAL PROJECT (FP-SOC-K3)
+Revalina Erica Permatasari (5027241007) | Syifa Nurul Alfiah (5027241019) | Salsa Bil Ulla (5027241052)
+Putri Joselina Silitonga (5027241116) | Shinta Alya Ramadani (5027241016) | Angga Firmansyah (5027241062)
 ===================================================================
 
 PENTING: Fase ini (Orang 5) melanjutkan dari Orang 1-4.
@@ -20,8 +21,9 @@ CATATAN KEAMANAN:
 ---
 
 AKSES:
-- Dashboard  : https://70.153.86.7  (admin / admin)
-- Web server : http://70.153.151.52
+- Dashboard  : https://70.153.25.103  (admin / admin)
+- Web server : http://70.153.24.223  (Agent-1 / target)
+- Agent-2    : 70.153.25.99  (attacker, akses via SSH saja)
 - SSH key    : wazuh-manager-key.pem
 
 ---
