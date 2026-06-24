@@ -2,12 +2,9 @@
 ## Web Server, DDoS & Malware Simulation + AI False-Alarm Classifier + SOAR
 
 > **Kelompok:** 3
-> 
-**Mata Kuliah:** Security of Cyber (SOC) — Semester Genap 2024/2025
-> 
-**Tanggal Laporan:** 25 Juni 2026
-> 
-**Platform:** Wazuh SIEM + SOAR — Microsoft Azure
+> **Mata Kuliah:** Security of Cyber (SOC) — Semester Genap 2024/2025
+> **Tanggal Laporan:** 25 Juni 2026
+> **Platform:** Wazuh SIEM + SOAR — Microsoft Azure
 > **Klasifikasi:** Internal / Lab Report
 
 ---
