@@ -1,0 +1,46 @@
+# =============================================================
+# wazuh-ai-filter.service — systemd unit untuk AI Filter (A5)
+# Author: Angga Firmansyah — AI Lead (A4/A5), FP-SOC-K3
+#
+# Pasang sebagai service di Wazuh Manager (Linux):
+#   sudo cp wazuh-ai-filter.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable wazuh-ai-filter
+#   sudo systemctl start wazuh-ai-filter
+#   sudo systemctl status wazuh-ai-filter
+#
+# Lihat log:
+#   sudo journalctl -u wazuh-ai-filter -f
+#   sudo tail -f /var/ossec/ai-filter/ai_filter.log
+# =============================================================
+
+[Unit]
+Description=Wazuh AI False-Alarm Filter (FP-SOC-K3 — Angga A5)
+Documentation=file:///opt/ai-filter/integration/README.md
+After=network.target wazuh-manager.service
+Wants=wazuh-manager.service
+
+[Service]
+Type=simple
+User=root
+Group=wazuh
+
+# Lokasi deploy (lihat deploy.sh)
+WorkingDirectory=/opt/ai-filter/integration
+ExecStart=/usr/bin/python3 /opt/ai-filter/integration/ai_filter.py --config /opt/ai-filter/integration/config.yaml
+
+# Auto-restart bila crash
+Restart=always
+RestartSec=5
+
+# Logging ke journald
+StandardOutput=journal
+StandardError=journal
+
+# Hardening dasar
+NoNewPrivileges=true
+ProtectSystem=full
+ReadWritePaths=/var/ossec/ai-filter
+
+[Install]
+WantedBy=multi-user.target

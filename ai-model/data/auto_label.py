@@ -1,15 +1,24 @@
 """
 Auto-label raw_alerts.csv and produce labeled_alerts.csv
 Based on false-alarm-criteria.md (Only real data, no synthetic data)
+
+Usage:
+    python3 auto_label.py                       # pakai path default di folder ini
+    python3 auto_label.py <input.csv> <out.csv> # path kustom
+
+Author: A3 (Data & Kriteria) — dirapikan oleh Angga (A4/A5 AI Lead)
 """
 import csv
+import os
 import re
 import random
 from collections import Counter, defaultdict
 from datetime import datetime
 
-INPUT = r"c:\sem4\soc\fp\FP-SOC-K3\ai-model\data\raw_alerts.csv"
-OUTPUT = r"c:\sem4\soc\fp\FP-SOC-K3\ai-model\data\labeled_alerts.csv"
+# Path relatif terhadap file ini supaya portable (dipakai di Windows maupun Linux)
+_HERE = os.path.dirname(os.path.abspath(__file__))
+INPUT = os.path.join(_HERE, "raw_alerts.csv")
+OUTPUT = os.path.join(_HERE, "labeled_alerts.csv")
 
 # Known IP categories
 INTERNAL_IPS = {"127.0.0.1", "127.0.0.53"}
@@ -93,10 +102,10 @@ def label_alert(row):
     return 0  # default
 
 
-def main():
-    print(f"[*] Reading {INPUT}...")
+def main(input_file=INPUT, output_file=OUTPUT):
+    print(f"[*] Reading {input_file}...")
     rows = []
-    with open(INPUT, 'r', encoding='utf-8-sig') as f:
+    with open(input_file, 'r', encoding='utf-8-sig') as f:
         reader = csv.DictReader(f)
         for row in reader:
             rows.append(row)
@@ -223,15 +232,19 @@ def main():
     # Write final CSV (only the 6 features + label)
     FINAL_COLS = ["rule_id", "rule_level", "freq_per_minute", "hour_of_day", "src_port", "dst_port", "label"]
 
-    with open(OUTPUT, 'w', newline='', encoding='utf-8') as f:
+    with open(output_file, 'w', newline='', encoding='utf-8') as f:
         writer = csv.DictWriter(f, fieldnames=FINAL_COLS, extrasaction='ignore')
         writer.writeheader()
         for row in sampled:
             writer.writerow({k: row[k] for k in FINAL_COLS})
 
-    print(f"\n[OK] Saved to {OUTPUT}")
+    print(f"\n[OK] Saved to {output_file}")
     print(f"[OK] {len(sampled)} rows, columns: {', '.join(FINAL_COLS)}")
 
 
 if __name__ == "__main__":
-    main()
+    # Izinkan override path via CLI: python3 auto_label.py [input] [output]
+    import sys
+    inp = sys.argv[1] if len(sys.argv) > 1 else INPUT
+    out = sys.argv[2] if len(sys.argv) > 2 else OUTPUT
+    main(inp, out)

@@ -1,0 +1,14 @@
+# AI Filter Integration (A5) — FP-SOC-K3
+# Install: pip install -r requirements.txt
+#
+# Versi minimum yang sudah teruji. Tidak ada dependency API eksternal
+# (semua model & inferensi lokal — sesuai requirement soal).
+
+scikit-learn>=1.3.0,<2.0.0   # load model.pkl + predict_proba
+joblib>=1.3.0                # load .pkl artifact
+PyYAML>=6.0                  # baca config.yaml
+numpy>=1.24.0                # operasi array fitur
+pandas>=2.0.0                # dipakai benchmark/test (bukan wajib di runtime live)
+
+# Catatan: tidak butuh TensorFlow / PyTorch / API berbayar.
+# Random Forest (sklearn) sudah cukup — lihat training/SOC_training.ipynb.

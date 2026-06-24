@@ -164,6 +164,54 @@ rule.id:100402                 → HTTP flood yang memicu SOAR
 
 ---
 
+## 7. AI False-Alarm Classifier (Human-AI Collaboration)
+
+> **AI Lead:** Angga Firmansyah (A4/A5)
+> **Detail lengkap:** [`ai-model/README.md`](ai-model/README.md)
+
+Komponen AI duduk **di antara Wazuh dan SOAR**, mengurangi false alarm sebelum
+alert sampai ke analyst atau respons otomatis.
+
+```
+  Wazuh alerts.json
+       │
+       ▼
+  ┌─ AI FILTER (ai_filter.py) ──────────────────┐
+  │  Random Forest (model.pkl)                  │
+  │  confidence >= 0.85  → FILTERED_FP (ditahan) │
+  │  0.60–0.84         → NEEDS_REVIEW (human)    │
+  │  < 0.60            → FORWARD_TO_SOAR         │
+  └──────────────────────────────────────────────┘
+       │                                    │
+       ▼                                    ▼
+  filtered_fp.log                      SOAR Active Response
+  (audit, tidak ke SOAR)               (firewall-drop, quarantine)
+```
+
+### Metrik Benchmark
+
+| Metrik | Nilai |
+|--------|-------|
+| Precision | 0.987 |
+| Recall (TP) | 1.000 — tidak ada serangan terlewat |
+| F1 Score | 0.993 |
+| Alert Reduction | 32.2% false alarm difilter |
+| CV 5-fold Recall | 1.000±0.000 (sangat stabil) |
+
+### Cara Cepat
+
+```bash
+# Test lokal (Windows/Linux)
+cd ai-model/integration
+pip install -r requirements.txt
+python tests/test_ai_filter.py
+
+# Deploy ke Manager
+sudo bash deploy.sh
+sudo systemctl status wazuh-ai-filter
+```
+
+---
 
 ## Struktur Repository
 
@@ -172,6 +220,11 @@ rule.id:100402                 → HTTP flood yang memicu SOAR
 ├── README.md                   ← Laporan utama (ini)
 ├── URUTAN_PENGERJAAN.md        ← Panduan urutan deploy
 ├── BACAINIAGENT.txt            ← Catatan penting untuk agent
+├── ai-model/                   ← AI False-Alarm Classifier (Angga — A4/A5)
+│   ├── README.md               ← Arsitektur AI + cara run (LINUXAS)
+│   ├── training/               ← Model artifacts + train_model.py
+│   ├── data/                   ← Dataset berlabel + pipeline
+│   └── integration/            ← ai_filter.py + tests + deploy
 ├── configs/
 │   ├── ossec-agent.conf        ← Konfigurasi localfile agent-1
 │   └── ossec-manager.conf      ← Konfigurasi SOAR manager

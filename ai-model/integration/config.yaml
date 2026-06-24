@@ -1,0 +1,67 @@
+# =============================================================
+# AI Filter Configuration — FP-SOC-K3 (A5 Integration)
+# Author: Angga Firmansyah (AI Lead — A4/A5)
+#
+# File ini mengatur perilaku ai_filter.py. Semua path relatif
+# terhadap folder integration/ (lokasi config.yaml ini).
+# =============================================================
+
+# --- Artifact model (hasil training di ../training/) ---
+model_path: ../training/model.pkl
+scaler_path: ../training/scaler.pkl
+feature_columns: ../training/feature_columns.json
+
+# --- Sumber alert (live Wazuh Manager) ---
+alerts_json: /var/ossec/logs/alerts/alerts.json
+
+# --- State & log (dibuat otomatis bila tidak ada) ---
+offset_file: /var/ossec/ai-filter/.offset
+log_dir: /var/ossec/ai-filter
+feedback_dir: /var/ossec/ai-filter/feedback
+
+# --- Custom rules yang diproses AI ---
+# Di luar daftar ini, alert DIABAIKAN (Wazuh built-in rule tidak difilter AI).
+# ID sama persis dengan rules/local_rules.xml
+target_rule_ids:
+  - 100200   # SYN Flood
+  - 100201   # UDP Flood
+  - 100202   # ICMP Flood
+  - 100300   # ClamAV malware FOUND
+  - 100301   # ClamAV EICAR
+  - 100302   # ClamAV daemon FOUND
+  - 100400   # HTTP request (korelasi helper)
+  - 100402   # HTTP Flood L7 (SOAR trigger)
+
+# --- 3-Zone Threshold (confidence = P(FP) = predict_proba[:,0]) ---
+# Sumber: data/false-alarm-criteria.md section 6
+thresholds:
+  filter_fp: 0.85        # confidence >= 0.85  -> FILTERED_FP (alert difilter)
+  needs_review: 0.60     # 0.60 <= conf < 0.85 -> NEEDS_REVIEW (human triage)
+                         # confidence <  0.60  -> FORWARD_TO_SOAR
+
+# --- Mekanisme penerusan ke SOAR ---
+forwarding:
+  enabled: true
+  # method:
+  #   "log"  = catat ke forwarded_to_soar.log (AMAN, non-invasif, default)
+  #   "exec" = panggil script SOAR langsung (firewall-drop / remove-malware.py)
+  method: log
+
+  # Konfigurasi mode "exec" — path script Active Response di Manager/Agent
+  # Dipakai HANYA jika method=exec. Default mati (aman untuk testing).
+  soar:
+    # rule_id -> [command, arg] yang dipanggil saat FORWARD_TO_SOAR
+    firewall_drop: "firewall-drop"        # rule 100402
+    remove_malware: "remove-malware.py"   # rule 100300/100301
+    # Agent tempat SOAR dijalankan (sesuai configs/ossec-manager.conf agent_id)
+    target_agent_id: "002"
+
+# --- Sliding window untuk hitung freq_per_minute ---
+freq_window:
+  seconds: 60              # window ±60 detik (sama dengan extract_alerts.py)
+
+# --- Polling interval (detik) untuk tail alerts.json ---
+poll_interval: 2
+
+# --- Logging verbosity: DEBUG / INFO / WARNING ---
+log_level: INFO
