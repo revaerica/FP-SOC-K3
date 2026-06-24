@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOC AI Dashboard — K3</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
+  header { background: #1a1d2e; border-bottom: 1px solid #2d3148; padding: 1rem 2rem; display: flex; align-items: center; gap: 12px; }
+  header h1 { font-size: 18px; font-weight: 600; color: #fff; }
+  .badge-live { background: #22c55e22; color: #22c55e; font-size: 11px; padding: 2px 8px; border-radius: 20px; border: 1px solid #22c55e55; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
+  .container { max-width: 1200px; margin: 0 auto; padding: 1.5rem 2rem; }
+  .last-update { font-size: 12px; color: #64748b; margin-bottom: 1.5rem; }
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .stat-card { background: #1a1d2e; border: 1px solid #2d3148; border-radius: 12px; padding: 1.2rem 1.4rem; }
+  .stat-label { font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+  .stat-value { font-size: 32px; font-weight: 700; }
+  .stat-sub { font-size: 12px; color: #64748b; margin-top: 4px; }
+  .c-green { color: #22c55e; } .c-red { color: #ef4444; } .c-amber { color: #f59e0b; } .c-blue { color: #3b82f6; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+  @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+  .panel { background: #1a1d2e; border: 1px solid #2d3148; border-radius: 12px; padding: 1.2rem; }
+  .panel-title { font-size: 14px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; }
+  .chart-wrap { position: relative; height: 220px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 8px 10px; font-size: 11px; text-transform: uppercase; color: #64748b; border-bottom: 1px solid #2d3148; }
+  td { padding: 8px 10px; border-bottom: 1px solid #1e2235; vertical-align: top; word-break: break-all; }
+  tr:last-child td { border-bottom: none; }
+  .zone { font-size: 11px; padding: 2px 7px; border-radius: 20px; font-weight: 500; }
+  .z-fp { background: #ef444422; color: #ef4444; }
+  .z-soar { background: #22c55e22; color: #22c55e; }
+  .z-rev { background: #f59e0b22; color: #f59e0b; }
+  .log-box { font-family: monospace; font-size: 11px; color: #94a3b8; background: #0f1117; border-radius: 8px; padding: 0.75rem; max-height: 220px; overflow-y: auto; line-height: 1.8; }
+  .log-line { padding: 2px 0; border-bottom: 1px solid #1e2235; }
+  .empty { color: #475569; font-size: 13px; padding: 1rem 0; text-align: center; }
+  .refresh-btn { margin-left: auto; background: #2d3148; border: 1px solid #3d4468; color: #94a3b8; padding: 6px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; }
+  .refresh-btn:hover { background: #3d4468; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>🛡️ SOC AI Dashboard — Kelompok K3</h1>
+  </div>
+  <span class="badge-live">● LIVE</span>
+  <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
+</header>
+
+<div class="container">
+  <div class="last-update" id="last-update">Memuat data...</div>
+
+  <!-- Stat Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total Diproses AI</div>
+      <div class="stat-value c-blue" id="s-total">—</div>
+      <div class="stat-sub">sejak AI filter aktif</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Filtered (False Positive)</div>
+      <div class="stat-value c-red" id="s-filtered">—</div>
+      <div class="stat-sub">ditahan, tidak ke SOAR</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Forwarded ke SOAR</div>
+      <div class="stat-value c-green" id="s-forwarded">—</div>
+      <div class="stat-sub">alert nyata, direspons</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Needs Human Review</div>
+      <div class="stat-value c-amber" id="s-review">—</div>
+      <div class="stat-sub">confidence 0.60–0.84</div>
+    </div>
+  </div>
+
+  <!-- Chart + Pie -->
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-title">AI Decision Distribution</div>
+      <div class="chart-wrap"><canvas id="pieChart"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Alert per Rule ID</div>
+      <div class="chart-wrap"><canvas id="barChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Needs Review Table -->
+  <div class="panel" style="margin-bottom:1.5rem">
+    <div class="panel-title">🟡 Needs Human Review</div>
+    <div id="review-table"><div class="empty">Memuat...</div></div>
+  </div>
+
+  <!-- SOAR Log + Filtered Log -->
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-title">🟢 Forwarded to SOAR (log)</div>
+      <div class="log-box" id="soar-log">Memuat...</div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">🔴 Filtered FP (log)</div>
+      <div class="log-box" id="filtered-log">Memuat...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+let pieChart, barChart;
+
+async function loadStats() {
+  const r = await fetch('/api/stats');
+  const d = await r.json();
+  document.getElementById('s-total').textContent = d.total_processed;
+  document.getElementById('s-filtered').textContent = d.total_filtered;
+  document.getElementById('s-forwarded').textContent = d.total_forwarded;
+  document.getElementById('s-review').textContent = d.total_review;
+  document.getElementById('last-update').textContent = 'Last updated: ' + d.last_updated;
+
+  // Pie chart
+  const pieData = [d.total_filtered, d.total_forwarded, d.total_review];
+  if (pieChart) pieChart.destroy();
+  pieChart = new Chart(document.getElementById('pieChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Filtered FP', 'Forwarded SOAR', 'Needs Review'],
+      datasets: [{ data: pieData, backgroundColor: ['#ef4444','#22c55e','#f59e0b'], borderWidth: 0 }]
+    },
+    options: { plugins: { legend: { labels: { color: '#94a3b8', font: { size: 12 } } } }, cutout: '65%' }
+  });
+
+  // Bar chart per rule
+  const rules = d.rule_breakdown;
+  const labels = Object.keys(rules);
+  const filt = labels.map(r => rules[r].filtered);
+  const fwd = labels.map(r => rules[r].forwarded);
+  const rev = labels.map(r => rules[r].review);
+  if (barChart) barChart.destroy();
+  barChart = new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Filtered', data: filt, backgroundColor: '#ef4444bb' },
+        { label: 'Forwarded', data: fwd, backgroundColor: '#22c55ebb' },
+        { label: 'Review', data: rev, backgroundColor: '#f59e0bbb' }
+      ]
+    },
+    options: {
+      scales: {
+        x: { stacked: true, ticks: { color: '#64748b' }, grid: { color: '#1e2235' } },
+        y: { stacked: true, ticks: { color: '#64748b' }, grid: { color: '#1e2235' } }
+      },
+      plugins: { legend: { labels: { color: '#94a3b8', font: { size: 12 } } } }
+    }
+  });
+}
+
+async function loadReviewTable() {
+  const r = await fetch('/api/needs_review');
+  const rows = await r.json();
+  const el = document.getElementById('review-table');
+  if (!rows.length) { el.innerHTML = '<div class="empty">Tidak ada alert untuk review</div>'; return; }
+  const keys = Object.keys(rows[0]);
+  el.innerHTML = `<table><thead><tr>${keys.map(k=>`<th>${k}</th>`).join('')}</tr></thead><tbody>
+    ${rows.map(row=>`<tr>${keys.map(k=>`<td>${row[k]||'—'}</td>`).join('')}</tr>`).join('')}
+  </tbody></table>`;
+}
+
+async function loadLog(endpoint, elId) {
+  const r = await fetch(endpoint);
+  const lines = await r.json();
+  const el = document.getElementById(elId);
+  if (!lines.length) { el.innerHTML = '<div class="empty">Belum ada log</div>'; return; }
+  el.innerHTML = lines.map(l=>`<div class="log-line">${l}</div>`).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+async function loadAll() {
+  await Promise.all([
+    loadStats(),
+    loadReviewTable(),
+    loadLog('/api/soar_log', 'soar-log'),
+    loadLog('/api/filtered_log', 'filtered-log')
+  ]);
+}
+
+loadAll();
+setInterval(loadAll, 30000); // auto-refresh tiap 30 detik
+</script>
+</body>
+</html>
